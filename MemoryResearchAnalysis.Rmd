@@ -1,0 +1,59 @@
+---
+title: "MemoryResearch"
+author: "Josh Wenger"
+date: '2022-10-17'
+output: html_document
+---
+```{r}
+library(psych)
+library(janitor)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+josh.0 <- read.csv("memory_data.csv")
+josh <- clean_names(josh.0)
+```
+
+```{r}
+overall_by_condition <- josh %>% group_by(condition) %>% summarise(
+  mean_overall = (mean(overall_percent_correct)))
+
+motivation_by_condition <- josh %>% group_by(condition) %>% summarise(
+  mean_motivation = (mean(motivation)))
+```
+
+```{r}
+summary(josh)
+```
+
+
+```{r}
+anova_scores_by_con <- aov(overall_percent_correct~condition, data = josh)
+summary(anova_scores_by_con)
+ggplot(overall_by_condition, mapping = aes(x=condition,y=mean_overall, fill = condition)) + geom_col(na.rm = TRUE, show.legend = FALSE) + labs(title = 'Memory Score by Condition', x = 'Condition', y = 'Memory Score') + ylim(0,1) 
+```
+
+```{r}
+anova_motivation_by_con <- aov(motivation~condition, data = josh)
+summary(anova_motivation_by_con)
+
+ggplot(motivation_by_condition, mapping = aes(x = condition, y = mean_motivation, fill = condition)) + geom_col(na.rm = TRUE, show.legend = FALSE) + labs(title = 'Motivation by Condition', x = 'Condition', y = 'Motivation') + ylim(0,7)
+```
+
+```{r}
+cor.test(josh$motivation,josh$overall_percent_correct,method=c("pearson"))
+ggplot(josh, mapping = aes(x = motivation, y = overall_percent_correct)) + geom_smooth()
+```
+
+```{r}
+lm <- lm(motivation ~ overall_percent_correct, data = josh)
+summary(lm)
+ggplot(josh, mapping = aes(motivation,overall_percent_correct)) + geom_smooth(method = ("lm"), color = "#8aab34", size = 2) + labs(x = "Motivation", y = "Memory Score") + ylim(0.5,1) + xlim(1,7) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),panel.background = element_blank(), axis.line = element_line(colour = "black"), aspect.ratio = 1, rect = element_rect(fill = "transparent"), text = element_text(size = 20), axis.text.x = element_text(colour="black"), axis.text.y = element_text(colour="black"))
+ggsave("MemMot.png")
+
+```
+
+#Power = 0.345
